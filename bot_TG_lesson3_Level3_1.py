@@ -106,32 +106,22 @@ def game_city(update,context):
     if city.lower() == 'restart':
         if len(context.user_data) != 0:
             context.user_data.clear()
-            print(f'context.user_data.clear(): {context.user_data}')
             update.message.reply_text('Restart! Ваш ход...')
-            print('Restart! Ваш ход...')
             return
         else:
             update.message.reply_text('Restart? Вы еще даже не начали играть). Ваш ход...')
-            print('Restart? Вы еще даже не начали играть). Ваш ход...')
             return
 
     if not context.user_data.get(chat_id) is None:
         city_bot = context.user_data[chat_id][0] # Берем city.lower
         city_bot_up = context.user_data[chat_id][1] # Берем city origenal
         if corret_fist_end_symbol(city, city_bot):
-            print(f'def corret_fist_end_symbo: True')
             correct_city = corret_write_city_user_data(city,context)
             if correct_city:
-                print(f'correct_city: True')
-                # dict_id_city[chat_id] = del_city_list(city, chat_id) # Убираем город пользователя
                 del_city_list(city, chat_id, context) # Убираем город пользователя
-                # context.user_data.update(Bot_reply_city(city, chat_id)) # Выбор Бота
                 context.user_data.update(Bot_reply_city(city, chat_id, context)) # Выбор Бота. в context.user_data должен поподать {'chat_id':[city.lower, city]}
                 city_bot = context.user_data[chat_id][0] # Берем city.lower
-                print(f'city_bot = {city_bot}')
                 city_bot_up = context.user_data[chat_id][1] # Берем city origenal
-                print(f'city_bot_up = {city_bot_up}')
-                # dict_id_city[chat_id] = del_city_list(city_bot, chat_id) # Убираем город Бота
                 del_city_list(city_bot, chat_id, context) # Убираем город Бота
                 update.message.reply_text(f'{city_bot_up}, ваш ход') # Отвечаем пользователю
                 return
@@ -151,18 +141,12 @@ def game_city(update,context):
             update.message.reply_text(f'Повторить ПАВИЛА ИГРЫ В ГОРОДА никогда не лишне:\nБуква И = Й, Е = Ё.\nЕсли город \
             закачиватеься на "ь","ъ","ы" тогда город должен начинаться на 2 букву с конца.\n Команда: "/cities restart"\
             запускает игру заного!\nНачать играть: "/cities Название_Города" например: "/cities Москва".')
-            #создаем список городов для пользователя по его id и сразу убираем город пользователя
             citys = dict_base_city.copy()
             context.user_data.update({'city':citys})
-            print(f'Count citys: {len(context.user_data["city"])}')
             del_city_list(city, chat_id, context) # Убираем город пользователя
             context.user_data.update(Bot_reply_city(city, chat_id, context)) # Выбор Бота. в context.user_data должен поподать {'chat_id':[city.lower, city]}
-            print(context.user_data[chat_id])
             city_bot = context.user_data[chat_id][0] # Берем city.lower
-            print(f'city_bot = {city_bot}')
             city_bot_up = context.user_data[chat_id][1] # Берем city origenal
-            print(f'city_bot_up = {city_bot_up}')
-            # dict_id_city[chat_id] = del_city_list(city_bot, chat_id) # Убираем город Бота
             del_city_list(city_bot, chat_id, context) # Убираем город Бота
             update.message.reply_text(f'{city_bot_up}, ваш ход') # Отвечаем пользователю
             return
