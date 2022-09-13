@@ -112,7 +112,7 @@ def game_city(update,context):
             update.message.reply_text('Restart? Вы еще даже не начали играть). Ваш ход...')
             return
 
-    if not context.user_data.get(chat_id) is None:
+    if context.user_data.get(chat_id):
         city_bot = context.user_data[chat_id][0] # Берем city.lower
         city_bot_up = context.user_data[chat_id][1] # Берем city origenal
         if corret_fist_end_symbol(city, city_bot):
