@@ -2,7 +2,6 @@
 #from pprint import pprint
 import logging
 from datetime import datetime
-import ephem
 from telegram.ext import Updater, CommandHandler, MessageHandler ,Filters
 import settings
 from base_city import dict_base_city
@@ -46,23 +45,17 @@ def del_city_list(city, id, context):
     try:
         city_up = context.user_data['city'].pop(city.lower())
         print(f'Delet city {city_up} is dict.\nCount citys: {len(context.user_data["city"])}')
-        return
     except KeyError:
         print(f'KeyError def del_city_list({city}, {id})')
 
-def corret_write_city(city,context): #ПРОВЕРКА -есть ли грод в "основном" словаре
-    if not dict_base_city.get(city.lower()) is None:
-        return True
-    return False
-
-def corret_write_city_user_data(city,context): #ПРОВЕРКА -есть ли грод в "основном" словаре
+def corret_write_city_user_data(city,context):
     if not context.user_data['city'].get(city.lower()) is None:
         return True
     else:
         print('corret_write_city_user_data: False')
         return False
 
-def corret_fist_end_symbol(word_user, word_bot):
+def corret_first_end_symbol(word_user, word_bot):
     if word_bot[-1] in ('ь','ъ','ы') and word_user[0].lower() == word_bot[-2].lower(): # на эти буквы городов нет
         return True
     elif word_bot[-1] in ('и','й') and word_user[0].lower() in ('и','й'): # буквы равны
@@ -115,13 +108,12 @@ def game_city(update,context):
     if context.user_data.get(chat_id):
         city_bot = context.user_data[chat_id][0] # Берем city.lower
         city_bot_up = context.user_data[chat_id][1] # Берем city origenal
-        if corret_fist_end_symbol(city, city_bot):
+        if corret_first_end_symbol(city, city_bot):
             correct_city = corret_write_city_user_data(city,context)
             if correct_city:
                 del_city_list(city, chat_id, context) # Убираем город пользователя
-                context.user_data.update(Bot_reply_city(city, chat_id, context)) # Выбор Бота. в context.user_data должен поподать {'chat_id':[city.lower, city]}
-                city_bot = context.user_data[chat_id][0] # Берем city.lower
-                city_bot_up = context.user_data[chat_id][1] # Берем city origenal
+                context.user_data.update(Bot_reply_city(city, chat_id, context)) # Выбор Бота. {'chat_id':[city.lower, city]}
+                city_bot, city_bot_up = context.user_data[chat_id]
                 del_city_list(city_bot, chat_id, context) # Убираем город Бота
                 update.message.reply_text(f'{city_bot_up}, ваш ход') # Отвечаем пользователю
                 return
@@ -136,8 +128,7 @@ def game_city(update,context):
             return
 
     else:
-        correct_city = corret_write_city(city,dict_base_city) # проверяем корректность города пользователя
-        if correct_city: #ERRO если название из нескольких слов!!! /cities Ростов-на-дону
+        if city.lower() in dict_base_city:
             update.message.reply_text(f'Повторить ПАВИЛА ИГРЫ В ГОРОДА никогда не лишне:\nБуква И = Й, Е = Ё.\nЕсли город \
             закачиватеься на "ь","ъ","ы" тогда город должен начинаться на 2 букву с конца.\n Команда: "/cities restart"\
             запускает игру заного!\nНачать играть: "/cities Название_Города" например: "/cities Москва".')
@@ -145,8 +136,7 @@ def game_city(update,context):
             context.user_data.update({'city':citys})
             del_city_list(city, chat_id, context) # Убираем город пользователя
             context.user_data.update(Bot_reply_city(city, chat_id, context)) # Выбор Бота. в context.user_data должен поподать {'chat_id':[city.lower, city]}
-            city_bot = context.user_data[chat_id][0] # Берем city.lower
-            city_bot_up = context.user_data[chat_id][1] # Берем city origenal
+            city_bot, city_bot_up = context.user_data[chat_id]
             del_city_list(city_bot, chat_id, context) # Убираем город Бота
             update.message.reply_text(f'{city_bot_up}, ваш ход') # Отвечаем пользователю
             return
@@ -162,7 +152,7 @@ def main():
     dp.add_handler(CommandHandler('cities', game_city)) # Добавил к диспечеру обработчик команд ...
     dp.add_handler(MessageHandler(Filters.text, talk_to_me)) # Добавил к диспечеру обработчик команд, укажем, что мы хотим реагировать только на текстовые сообщения
 
-    logging.info('Start Learn_Python01_Mega_Bot')
+    logging.info(f'{datetime.now()} Start Learn_Python01_Mega_Bot')
     mybot.start_polling() # Командуем боту начать ходить в Telegram за сообщениями
     mybot.idle() # Запускаем бота, он будет работать, пока мы его не остановим принудительно
 
